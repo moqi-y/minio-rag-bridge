@@ -8,5 +8,6 @@ dependencies = [
     "llama-index>=0.14.25",
     "llama-index-embeddings-ollama>=0.10.0",
     "llama-index-llms-ollama>=0.11.0",
+    "llama-index-readers-minio>=0.6.0",
     "python-dotenv>=1.2.4",
 ]

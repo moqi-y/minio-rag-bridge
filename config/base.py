@@ -31,9 +31,9 @@ db_charset = os.getenv("DB_CHARSET", "utf8mb4")
 vector_db_table_name = os.getenv("VECTOR_DB_TABLE_NAME", "vector_db")
 
 # MinIO配置
-minio_host = os.getenv("MINIO_HOST", "localhost")
-minio_port = os.getenv("MINIO_PORT", "9000")
+minio_endpoint = os.getenv("MINIO_ENDPOINT", "localhost:9000")
 minio_access_key = os.getenv("MINIO_ACCESS_KEY", "minio")
 minio_secret_key = os.getenv("MINIO_SECRET_KEY", "minio123")
 minio_bucket_name = os.getenv("MINIO_BUCKET_NAME", "chatglm")  # 存储桶名称
+minio_prefix = os.getenv("MINIO_PREFIX", "/docs")
 minio_secure = os.getenv("MINIO_SECURE", "False").lower() in ["true", "1", "yes"]  # 是否使用HTTPS,默认False,即使用HTTP。
