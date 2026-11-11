@@ -19,7 +19,7 @@ if not logger.handlers:  # 防重复添加
     # 控制台处理器
     console_handler = logging.StreamHandler()
     # 控制台日志级别设置
-    console_handler.setLevel(logging.WARNING)
+    console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
@@ -33,7 +33,6 @@ if not logger.handlers:  # 防重复添加
     file_handler.setLevel(logging.DEBUG)  # 问题2
     file_handler.setFormatter(formatter)  # 问题2
     logger.addHandler(file_handler)
-
 
 if __name__ == "__main__":
     logger.info("This is an info message")
