@@ -53,6 +53,6 @@ if __name__ == '__main__':
     # print(openai_model)
     # print("  实际维度:", len(openai_model.get_model().get_text_embedding("测试")))
 
-    ollama_model = OllamaEmbedModel()
+    ollama_model = OllamaEmbedModel().get_model()
     print(ollama_model)
-    print("  实际维度:", len(ollama_model.get_model().get_text_embedding("测试")))
+    print("  实际维度:", len(ollama_model.get_text_embedding("测试")))

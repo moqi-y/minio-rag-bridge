@@ -7,7 +7,7 @@ env_path = ROOT_DIR / ".env"
 
 # 加载 .env（默认找当前目录）,
 load_dotenv(dotenv_path=env_path, override=False)
-print(os.getenv("MINIO_ENDPOINT", ''))
+print("✅加载环境变量成功")
 
 # 大语音模型配置
 llm_model_name = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
