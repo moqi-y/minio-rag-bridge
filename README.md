@@ -48,7 +48,8 @@
 ### 安装
 
 ```bash
-pip install minio-rag-bridge
+# 自动读取 pyproject.toml 和 uv.lock，创建/更新虚拟环境，并安装项目依赖。
+uv sync
 ```
 
 或从源码安装：
