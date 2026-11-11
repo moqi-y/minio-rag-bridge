@@ -1,0 +1,28 @@
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Editor-based REST client request
+/rest/
+
+# 项目忽略文件
+
+# 环境变量文件
+.env
+# IDE配置文件
+.idea/
+# python虚拟环境
+.venv
+# 日志文件
+logs/
+# 缓存文件
+cache/
+# 临时文件
+temp/
+# 编译文件
+*.class
+
