@@ -9,5 +9,6 @@ dependencies = [
     "llama-index-embeddings-ollama>=0.10.0",
     "llama-index-llms-ollama>=0.11.0",
     "llama-index-readers-minio>=0.6.0",
+    "psycopg2>=2.9.13",
     "python-dotenv>=1.2.4",
 ]
