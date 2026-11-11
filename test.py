@@ -18,6 +18,11 @@ query_engine = index.as_query_engine(
 )
 # 查询
 if __name__ == '__main__':
+    # 流式查询，response 是 StreamingResponse
     response = query_engine.query("将本地分支的更改推送到对应的远程分支的命令")
+    # 流式文本
     for chunk in response.response_gen:
-        print(chunk, end='', flush=True)
+        print("流式响应：", chunk, end="", flush=True)
+    # 来源信息
+    for node in response.source_nodes:
+        print("来源：", node.node.metadata, node.score)
