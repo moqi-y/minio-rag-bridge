@@ -21,6 +21,7 @@ embedding_model_name = os.getenv("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
 embedding_model_api_url = os.getenv("EMBEDDING_MODEL_API_URL",
                                     "https://api-inference.huggingface.co/models/all-MiniLM-L6-v2")
 embedding_model_api_key = os.getenv("EMBEDDING_MODEL_API_KEY", "hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+embedding_model_dim = os.getenv("EMBED_DIM", 1536)
 
 # 数据库配置
 db_host = os.getenv("DB_HOST", "localhost")
