@@ -25,4 +25,6 @@ cache/
 temp/
 # 编译文件
 *.class
+# 本地资源
+data
 
