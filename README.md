@@ -44,7 +44,7 @@
 - Python 3.10+
 - 可访问的 MinIO 实例（及 Access Key / Secret Key）
 - 已启用 `pgvector` 扩展的 PostgreSQL 实例（`CREATE EXTENSION vector;`）
-
+- 注意：Docker 用户：不要用普通的 postgres 镜像，改用官方集成了扩展的镜像`pgvector/pgvector:pg16`
 ### 安装
 
 ```bash
