@@ -5,30 +5,49 @@ from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.core.vector_stores import VectorStoreQuery
 from typing import List, Optional, Any
 from llama_index.core.schema import BaseNode, TextNode
+from sqlalchemy import URL, create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from config.base import db_name, db_host, db_password, db_port, db_user, vector_db_table_name, embedding_model_dim
+
+"""
+PGVectorStore 内部会同时管理同步和异步两条连接路径。
+它的构造函数逻辑是：要么你提供一对完整的 engine（同步+异步），要么它自己根据连接参数创建。
+只给 engine 不给 async_engine，它会认为配置不完整，直接抛 ValueError。
+"""
 
 
 class VectorOps:
     def __init__(self):
         self.vector_store = None
 
-        vector_store = PGVectorStore.from_params(
-            database=db_name,
-            host=db_host,
+        # 同步 URL
+        sync_url = URL.create(
+            "postgresql+psycopg2",
+            username=db_user,
             password=db_password,
+            host=db_host,
             port=db_port,
-            user=db_user,
-            table_name=vector_db_table_name,
-            embed_dim=embedding_model_dim,
-            # hnsw_kwargs={
-            #     "hnsw_m": 16,
-            #     "hnsw_ef_construction": 64,
-            #     "hnsw_ef_search": 40,
-            #     "hnsw_dist_method": "vector_cosine_ops",
-            # },
+            database=db_name,
         )
-        self.vector_store = vector_store
+        # 异步 URL（驱动改成 asyncpg）
+        async_url = URL.create(
+            "postgresql+asyncpg",
+            username=db_user,
+            password=db_password,
+            host=db_host,
+            port=db_port,
+            database=db_name,
+        )
+        sync_engine = create_engine(sync_url)
+        async_engine = create_async_engine(async_url)
+
+        self.vector_store = PGVectorStore(
+            engine=sync_engine,
+            async_engine=async_engine,
+            table_name=vector_db_table_name,
+            embed_dim=int(embedding_model_dim),
+        )
 
     # 返回vector_store对象
     def get_vector_store(self):

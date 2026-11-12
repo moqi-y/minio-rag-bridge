@@ -1,4 +1,3 @@
-
 # minio-rag-bridge
 
 **把 MinIO 里的文档，变成你 PostgreSQL 里可问答的知识库。**
@@ -12,9 +11,11 @@
 
 ## 为什么做这个项目
 
-大多数 RAG 教程默认你从零搭建向量库，或者把文档迁移到新的存储系统。但真实场景往往是：**文档已经在 MinIO 里了，数据库已经在跑 PostgreSQL 了。**
+大多数 RAG 教程默认你从零搭建向量库，或者把文档迁移到新的存储系统。但真实场景往往是：**文档已经在 MinIO 里了，数据库已经在跑
+PostgreSQL 了。**
 
-`minio-rag-bridge` 的目标很简单：在这两套已有系统之间搭一座桥，让你用最短的路径获得一个可用的私有知识库问答系统，而不必引入 Milvus、Qdrant 等额外的运维负担。
+`minio-rag-bridge` 的目标很简单：在这两套已有系统之间搭一座桥，让你用最短的路径获得一个可用的私有知识库问答系统，而不必引入
+Milvus、Qdrant 等额外的运维负担。
 
 ### 它适合谁
 
@@ -33,7 +34,8 @@
 
 ## 架构
 
-**数据流**：MinIO Bucket 中的文档 → `MinioReader` 加载 → LlamaIndex 切分与向量化 → `PGVectorStore` 写入 PostgreSQL → 查询时检索相似片段 → LLM 生成带来源的答案。
+**数据流**：MinIO Bucket 中的文档 → `MinioReader` 加载 → LlamaIndex 切分与向量化 → `PGVectorStore` 写入 PostgreSQL →
+查询时检索相似片段 → LLM 生成带来源的答案。
 
 ---
 
@@ -44,10 +46,14 @@
 - Python 3.10+
 - 可访问的 MinIO 实例（及 Access Key / Secret Key）
 - 已启用 `pgvector` 扩展的 PostgreSQL 实例（`CREATE EXTENSION vector;`）
-- 注意：Docker 用户：不要用普通的 postgres 镜像，改用官方集成了扩展的镜像`pgvector/pgvector:pg16`，并在业务库`knowledge_base`里执行`CREATE EXTENSION vector;`
+- 注意：Docker 用户：不要用普通的 postgres 镜像，改用官方集成了扩展的镜像`pgvector/pgvector:pg16`
+  ，并在业务库`knowledge_base`里执行`CREATE EXTENSION vector;`
+
 ### 安装
 
 ```bash
+# 安装UV包管理器
+pip install uv
 # 自动读取 pyproject.toml 和 uv.lock，创建/更新虚拟环境，并安装项目依赖。
 uv sync
 ```
@@ -57,7 +63,8 @@ uv sync
 ```bash
 git clone https://github.com/yourname/minio-rag-bridge.git
 cd minio-rag-bridge
-pip install -e .
+pip install uv
+uv sync
 ```
 
 ### 配置
@@ -65,24 +72,38 @@ pip install -e .
 创建 `.env` 文件：
 
 ```env
-# MinIO
-MINIO_ENDPOINT=localhost:9000
-MINIO_ACCESS_KEY=your_access_key
-MINIO_SECRET_KEY=your_secret_key
-MINIO_BUCKET=knowledge-docs
-MINIO_PREFIX=docs/              # 可选：只读取某个目录
+# MinIO 配置
+MINIO_ENDPOINT=192.168.1.59:9000
+MINIO_ACCESS_KEY=g7JutsirdXVsAF8cCtCr
+MINIO_SECRET_KEY=6Nl8YwLKredUBU0pnmuoKu8pTpxpaGpvEo9lNCz5
+MINIO_BUCKET_NAME=knowledge-docs
+MINIO_SECURE=False   # 是否使用HTTPS,默认False,即使用HTTP。
+MINIO_PREFIX=docs/    # 可选：只读取某个目录
 
-# PostgreSQL
-PG_HOST=localhost
-PG_PORT=5432
-PG_USER=postgres
-PG_PASSWORD=your_password
-PG_DATABASE=knowledge_base
-PG_TABLE=ai_knowledge_vectors
+# PostgreSQL 配置
+DB_HOST=192.168.1.59
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=admin@123
+DB_NAME=knowledge_base
+DB_CHARSET=utf8mb4
+# 向量存储表
+VECTOR_DB_TABLE_NAME=ai_knowledge_vectors
 
-# Embedding（默认使用 OpenAI，可替换）
-OPENAI_API_KEY=sk-...
-EMBED_DIM=1536                  # 需与嵌入模型输出维度一致
+# Embedding模型（默认使用Ollama,可替换,已支持OpenAI）
+EMBEDDING_MODEL_NAME=nomic-embed-text:latest
+# OpenAI 示例：
+# EMBEDDING_MODEL_API_URL=https://api.openai.com/v1/embeddings
+EMBEDDING_MODEL_API_URL=http://192.168.1.59:11434
+EMBEDDING_MODEL_API_KEY=your_api_key
+EMBED_DIM=768  # Embedding维度,需要与你选择的嵌入模型一致    
+
+# llm模型
+MODEL_NAME=qwen3:0.6b
+# OpenAI 示例：
+# MODEL_API_URL=https://api.openai.com/v1/chat/completions
+MODEL_API_URL=http://192.168.1.59:11434
+MODEL_API_KEY=your_api_key
 ```
 
 ### 构建索引
@@ -131,22 +152,25 @@ response = kb.query("ISO 27001 的访问控制要求", vector_store_query_mode="
 ### 增量刷新友好
 
 支持基于文档内容哈希的刷新策略：只对 MinIO 中发生变化的文件重新计算向量，避免全量重灌带来的嵌入成本。
+```python
+kb.ingest(bucket="knowledge-docs", prefix="docs/", refresh=True)
+```
 
 ### 可替换的嵌入模型
 
-默认使用 OpenAI 嵌入，但通过 LlamaIndex 的 `embed_model` 接口可轻松替换为本地模型（如 BGE 系列），适合对数据出境有要求的场景。
+默认使用 Ollama 嵌入，但通过 LlamaIndex 的 `embed_model` 接口可轻松替换为联网模型（如 OpenAI 系列），适合对数据出境有要求的场景。
 
 ---
 
 ## 技术栈
 
-| 组件 | 角色 |
-|------|------|
-| **MinIO** | 文档源，S3 兼容对象存储 |
-| **LlamaIndex** | 文档加载、切分、索引、查询编排 |
-| **MinioReader** | LlamaIndex 官方 MinIO 读取器，支持 Bucket / 前缀 / 单文件 |
-| **PGVectorStore** | LlamaIndex 官方 PostgreSQL 向量存储集成 |
-| **pgvector** | PostgreSQL 向量扩展，支持 HNSW / IVFFlat 索引 |
+| 组件                | 角色                                           |
+|-------------------|----------------------------------------------|
+| **MinIO**         | 文档源，S3 兼容对象存储                                |
+| **LlamaIndex**    | 文档加载、切分、索引、查询编排                              |
+| **MinioReader**   | LlamaIndex 官方 MinIO 读取器，支持 Bucket / 前缀 / 单文件 |
+| **PGVectorStore** | LlamaIndex 官方 PostgreSQL 向量存储集成              |
+| **pgvector**      | PostgreSQL 向量扩展，支持 HNSW / IVFFlat 索引         |
 
 ---
 
@@ -159,7 +183,7 @@ response = kb.query("ISO 27001 的访问控制要求", vector_store_query_mode="
 - [ ] 增量刷新（基于 doc_id + 内容哈希）
 - [ ] CLI 工具（`minio-rag ingest` / `minio-rag query`）
 - [ ] Docker Compose 本地开发环境
-- [ ] 中文嵌入模型配置示例（BGE / BCE）
+- [ ] 中文嵌入模型配置示例（Ollama / BCE）
 
 ---
 
@@ -180,4 +204,5 @@ MIT
 ---
 
 **minio-rag-bridge** — 让知识库搭建回归“用已有的东西解决问题”。
+
 ```
