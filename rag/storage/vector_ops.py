@@ -5,10 +5,11 @@ from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.core.vector_stores import VectorStoreQuery
 from typing import List, Optional, Any
 from llama_index.core.schema import BaseNode, TextNode
-from sqlalchemy import URL, create_engine
+from sqlalchemy import URL, create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from config.base import db_name, db_host, db_password, db_port, db_user, vector_db_table_name, embedding_model_dim
+from utils.log_handle import logger
 
 """
 PGVectorStore 内部会同时管理同步和异步两条连接路径。
@@ -20,6 +21,8 @@ PGVectorStore 内部会同时管理同步和异步两条连接路径。
 class VectorOps:
     def __init__(self):
         self.vector_store = None
+        self.sync_engine = None
+        self.async_engine = None
 
         # 同步 URL
         sync_url = URL.create(
@@ -39,12 +42,12 @@ class VectorOps:
             port=db_port,
             database=db_name,
         )
-        sync_engine = create_engine(sync_url)
-        async_engine = create_async_engine(async_url)
+        self.sync_engine = create_engine(sync_url)
+        self.async_engine = create_async_engine(async_url)
 
         self.vector_store = PGVectorStore(
-            engine=sync_engine,
-            async_engine=async_engine,
+            engine=self.sync_engine,
+            async_engine=self.async_engine,
             table_name=vector_db_table_name,
             embed_dim=int(embedding_model_dim),
         )
@@ -52,6 +55,25 @@ class VectorOps:
     # 返回vector_store对象
     def get_vector_store(self):
         return self.vector_store
+
+    # 判断数据库是否已有数据
+    def is_empty(self) -> bool:
+        """
+        判断向量数据表是否为空表
+        :return:  True or False
+        """
+        with self.sync_engine.connect() as conn:
+            # LlamaIndex的PGVectorStore的设计：你传入的table_name是“逻辑表名”，
+            # 它会在实际建表时自动加上data_前缀
+            stmt = "SELECT COUNT(*) FROM " + "data_" + vector_db_table_name
+            try:
+                result = conn.execute(text(stmt))
+                return result.scalar() == 0  # 如果结果为0，则表示表中没有数据
+            except Exception as e:
+                logger.info(f"{vector_db_table_name}向量数据表数据为空或者不存在,ERROR:{str(e)}")
+                return True  # 如果发生异常，则返回True，表示数据表为空
+            finally:
+                conn.close()
 
     # ------------------------------------------------------------
     # 存储向量：PGVectorStore 实际接收的是节点（Node）
@@ -139,5 +161,6 @@ class VectorOps:
 if __name__ == '__main__':
     # 测试向量存储
     vectorOps = VectorOps()
-    res = vectorOps.get_vector_store()
-    print(res)
+    # res = vectorOps.get_vector_store()
+    # print(res)
+    vectorOps.is_empty()

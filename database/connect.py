@@ -1,3 +1,7 @@
+"""
+数据库连接封装
+@description: 初始化项目数据库，重建数据库
+"""
 import psycopg2
 
 from psycopg2 import sql
@@ -26,4 +30,3 @@ finally:
 
 if __name__ == '__main__':
     logger.info("数据库连接成功")
-

@@ -6,11 +6,7 @@ from model.llm_model import OllamaModel
 from rag.loaders.minio_loader import documents
 from rag.storage.vector_ops import VectorOps
 from rag.utils.text_cleaner import clean_documents
-
-# 判断数据库是否已有数据（关键步骤）
-# 这里需要你根据 VectorOps 的实现来写判断。
-# 常见方式：查询 pgvector 对应的表是否有记录
-HAS_EXIST_DATA = True
+from utils.log_handle import logger
 
 # 1、使用minio读取器加载文档,并清洗文档
 minio_docs = clean_documents(documents)
@@ -22,15 +18,18 @@ Settings.embed_model = OllamaEmbedModel().get_model()
 """ 计划使用pg表存储"""
 vectorOps = VectorOps()  # 向量存储操作类
 storage_context = StorageContext.from_defaults(vector_store=vectorOps.get_vector_store())
+# 判断数据库表是否已有数据（关键步骤）
+IS_EMPTY_TABLE = vectorOps.is_empty()
 
 # 3、创建向量存储索引
-if HAS_EXIST_DATA:
-    """ 如果存在向量索引数据，则从向量存储中加载 """
-    index = VectorStoreIndex.from_vector_store(vector_store=vectorOps.get_vector_store())
-else:
-    """ 如果不存在向量索引数据，则从文档中创建 """
-    print("不存在向量索引数据")
+if IS_EMPTY_TABLE:
+    """ 如果不存在向量索引数据表，则从文档中创建 """
+    logger.info("不存在向量索引数据")
     index = VectorStoreIndex.from_documents(minio_docs, storage_context=storage_context, show_progress=True)
+else:
+    """ 如果存在向量索引数据表，则从向量存储中加载 """
+    logger.info("存在向量索引数据,从向量存储中加载")
+    index = VectorStoreIndex.from_vector_store(vector_store=vectorOps.get_vector_store())
 
 # 5、设置检索器（大语言模型）
 Settings.llm = OllamaModel()
