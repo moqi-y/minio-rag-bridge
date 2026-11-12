@@ -6,7 +6,7 @@
 一套基于 LlamaIndex 的轻量级 RAG 方案：文档留在 MinIO，向量写进你已有的 PostgreSQL（pgvector），不新增向量数据库，不改变现有运维体系。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
 
 ---
 
