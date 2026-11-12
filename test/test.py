@@ -4,7 +4,7 @@ from model.embed_model import OllamaEmbedModel
 from model.llm_model import OllamaModel
 
 #  加载文档
-documents = SimpleDirectoryReader("data").load_data()
+documents = SimpleDirectoryReader("../data").load_data()
 # 设置嵌入模型
 Settings.embed_model = OllamaEmbedModel().get_model()
 # 创建向量存储索引
