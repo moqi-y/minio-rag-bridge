@@ -152,6 +152,7 @@ response = kb.query("ISO 27001 的访问控制要求", vector_store_query_mode="
 ### 增量刷新友好
 
 支持基于文档内容哈希的刷新策略：只对 MinIO 中发生变化的文件重新计算向量，避免全量重灌带来的嵌入成本。
+
 ```python
 kb.ingest(bucket="knowledge-docs", prefix="docs/", refresh=True)
 ```
@@ -184,6 +185,28 @@ kb.ingest(bucket="knowledge-docs", prefix="docs/", refresh=True)
 - [ ] CLI 工具（`minio-rag ingest` / `minio-rag query`）
 - [ ] Docker Compose 本地开发环境
 - [ ] 中文嵌入模型配置示例（Ollama / BCE）
+
+---
+
+## 模块说明
+
+### 模块结构
+
+本项目包含以下主要模块：      
+`config/config.py`：配置文件，包含项目的配置信息。      
+`data 目录`：本地知识库源文件存储文件夹，用于存储构建本地的文件，例如pdf、docx、markdown文件等。    
+`database 目录`：数据库相关文件，包括数据库连接封装方法。    
+`logs 目录`：项目运行日志，记录了项目运行过程中的日志信息，例如app.log记录系统日志。   
+`models 目录`：模型相关文件，包括嵌入模型、大语音模型的封装方法。   
+`rag 目录`：rag相关文件，包括rag的入口文件和rag数据加载、rag向量存储、rag工具方法封装。     
+`rag/entery.py`：rag入口文件，可作为rag模块的主程序运行。       
+`app.py`：项目的主入口文件，是项目主程序文件。   
+`utils 目录`：项目的工具方法封装文件夹。    
+`.env`：项目的环境变量文件，用于存储项目的配置信息。     
+`.python-version`：项目的python版本文件，用于指定项目的python版本。      
+`pyproject.toml`：项目的配置文件，用于存储项目的依赖信息。     
+`test 目录`：项目的测试文件目录，用于存储项目的测试代码。      
+`uv.lock`：项目的锁文件，使用uv工具时生成的依赖锁定文件。      
 
 ---
 
